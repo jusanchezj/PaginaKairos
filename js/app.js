@@ -41,8 +41,8 @@
   function productById(id) { return catalog.products.find(product => product.id === id); }
   function getCategories() { return ['Vinos','Whisky','Tequila','Champagne','Aguardiente','Espumosos','Sin alcohol','Regalos']; }
   function categoryIcons(category) {
-    const names = { 'Vinos': '◒', 'Whisky': '♜', 'Tequila': '✳', 'Champagne': '✧', 'Aguardiente': '◈', 'Espumosos': '✧', 'Cervezas': '▥', 'Sin alcohol': '◌', 'Café y gourmet': '⌁', 'Regalos': '◇' };
-    return names[category] || '✳';
+    const names = { 'Vinos': '◒︎', 'Whisky': '♜︎', 'Tequila': '✳︎', 'Champagne': '✧︎', 'Aguardiente': '◈︎', 'Espumosos': '✧︎', 'Cervezas': '▥︎', 'Sin alcohol': '◌︎', 'Café y gourmet': '⌁︎', 'Regalos': '◇︎' };
+    return names[category] || '✳︎';
   }
   function productImage(product, compact = false) {
     const wrapper = document.createElement('div'); wrapper.className = compact ? 'mini-product-image' : 'product-image';
@@ -58,7 +58,7 @@
       const card = document.createElement('button'); card.className = `category-card category-card-${(index % 4) + 1}`; card.type = 'button';
       const top = document.createElement('div'); top.className = 'category-card-top';
       const icon = document.createElement('span'); icon.className = 'category-symbol'; icon.textContent = category.icon;
-      const arrow = document.createElement('span'); arrow.className = 'category-arrow'; arrow.textContent = '↗';
+      const arrow = document.createElement('span'); arrow.className = 'category-arrow'; arrow.textContent = '↗︎';
       top.append(icon, arrow);
       const title = document.createElement('h3'); title.textContent = category.name;
       const note = document.createElement('p'); note.textContent = `${count} ${count === 1 ? 'opción' : 'opciones'} para elegir`;

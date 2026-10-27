@@ -77,3 +77,48 @@
   .hero-note { margin-top: 27px; }
   .hero-bottom { left: 25px; right: 25px; bottom: 18px; }
 }
+
+
+/* Correcciones verificadas para pantallas pequeñas */
+@media (max-width: 800px) {
+  html { scroll-padding-top: 84px; }
+  section[id] { scroll-margin-top: 84px; }
+  .hero {
+    min-height: 900px;
+    padding: 44px 24px 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    background-color: #f8f5ed;
+    background-image:
+      linear-gradient(180deg, rgba(250,247,239,.98) 0%, rgba(250,247,239,.96) 34%, rgba(250,247,239,.80) 47%, rgba(250,247,239,.15) 66%, rgba(250,247,239,.02) 100%),
+      url('../images/kairos-portada.png');
+    background-repeat: no-repeat;
+    background-size: 100% 100%, auto 58%;
+    background-position: center, 68% bottom;
+  }
+  .hero-copy { width: 100%; max-width: 100%; padding: 0; }
+  .hero h1 { max-width: 100%; font-size: clamp(42px, 10vw, 54px); line-height: 1.05; margin-bottom: 18px; }
+  .hero-description { max-width: 100%; font-size: 14px; line-height: 1.55; margin-bottom: 22px; }
+  .hero-buttons { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+  .hero-buttons .button { min-height: 52px; padding: 0 18px; }
+  .hero-buttons .light-link { color: #17362d; }
+  .hero-note { margin-top: 24px; }
+  .hero-art { display: none !important; }
+  .hero-bottom { position: absolute; left: 24px; right: 24px; bottom: 12px; font-size: 7px; }
+  .category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .category-card { min-width: 0; }
+  .category-card h3 { overflow-wrap: anywhere; }
+}
+@media (max-width: 480px) {
+  .hero { min-height: 880px; padding: 38px 18px 28px; background-size: 100% 100%, auto 52%; background-position: center, 68% bottom; }
+  .hero .eyebrow { font-size: 9px; letter-spacing: .16em; margin-bottom: 20px; }
+  .hero h1 { font-size: clamp(39px, 9.7vw, 46px); letter-spacing: -.035em; }
+  .hero-description { font-size: 13px; }
+  .hero-buttons .button { font-size: 12px; }
+  .hero-note { font-size: 10px; }
+  .hero-bottom { gap: 7px; font-size: 6px; letter-spacing: .08em; }
+  .category-card { padding: 13px; min-height: 140px; }
+  .category-card-top { margin-bottom: 18px; }
+}
