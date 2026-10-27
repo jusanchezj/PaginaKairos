@@ -18,7 +18,7 @@
       <img class="brand-logo-image" src="images/kairos-logo.jpeg" alt="KAIROS — Un brindis para soñar">
     </a>
     <nav class="desktop-nav" aria-label="Navegación principal">
-      <a href="#catalogo">Tienda</a><a href="#categorias">Categorías</a><a href="#anchetas">Arma tu regalo</a><a href="#nosotros">Nuestra esencia</a>
+      <a href="#catalogo">Tienda</a><a href="#categorias">Categorías</a><a href="#builder">Arma tu regalo</a><a href="#esencia">Nuestra esencia</a>
     </nav>
     <div class="header-actions">
       <button class="icon-button search-toggle" id="searchToggle" aria-label="Buscar productos"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg></button>
@@ -27,7 +27,7 @@
     </div>
   </header>
   <div class="search-bar" id="searchBar"><input id="globalSearch" type="search" placeholder="Busca whisky, vino, una ocasión…" aria-label="Buscar en el catálogo"><button id="searchGo" class="button button-dark">Buscar</button></div>
-  <nav class="mobile-nav" id="mobileNav"><a href="#catalogo">Tienda</a><a href="#categorias">Categorías</a><a href="#anchetas">Arma tu regalo</a><a href="#nosotros">Nuestra esencia</a></nav>
+  <nav class="mobile-nav" id="mobileNav"><a href="#catalogo">Tienda</a><a href="#categorias">Categorías</a><a href="#builder">Arma tu regalo</a><a href="#esencia">Nuestra esencia</a></nav>
 
   <main>
     <section class="hero" id="inicio">
@@ -35,33 +35,29 @@
         <p class="eyebrow"><span class="eyebrow-line"></span> MÁS QUE UNA BOTELLA</p>
         <h1>Hay sueños que<br>merecen <em>un brindis.</em></h1>
         <p class="hero-description">Celebra los pequeños logros, los nuevos comienzos y todo eso que hace que la vida valga la pena.</p>
-        <div class="hero-buttons"><a class="button button-light" href="#catalogo">Descubre la colección <span>↗</span></a><a class="text-link light-link" href="#anchetas">Crea un regalo a tu medida</a></div>
+        <div class="hero-buttons"><a class="button button-light" href="#catalogo">Descubre la colección <span>↗</span></a><a class="text-link light-link" href="#builder">Crea un regalo a tu medida</a></div>
         <div class="hero-note"><span class="sparkle">✳</span><span>Regalos con intención<br><strong>Momentos que se quedan</strong></span></div>
       </div>
-      <div class="hero-art" role="img" aria-label="Botella y caja de regalo en tonos verdes y dorados">
-        <div class="hero-orbit orbit-one"></div><div class="hero-orbit orbit-two"></div>
-        <div class="hero-badge">UN BRINDIS<br><b>POR TI</b></div>
-        <div class="hero-box"><div class="box-ribbon"></div><div class="box-stamp">K<span>✳</span></div><div class="box-label">KAIROS<small>UN BRINDIS PARA SOÑAR</small></div></div>
-        <div class="hero-bottle"><div class="bottle-neck"></div><div class="bottle-body"><div class="bottle-foil"></div><div class="bottle-label"><span>✳</span><b>KAIROS</b><small>EDICIÓN<br>CELEBRAR</small><i>750 ml</i></div></div></div>
-        <div class="hero-surface"></div><p class="art-caption">CELEBRAR TAMBIÉN ES AGRADECER.</p>
+      <div class="hero-art hero-art-photo">
+        <img
+          class="hero-photo"
+          src="images/kairos-portada.png"
+          alt="Vino Las Moras en su caja de regalo KAIROS al atardecer"
+          fetchpriority="high"
+        >
       </div>
       <div class="hero-bottom"><span>01 / 03</span><span class="hero-bottom-line"></span><span>HECHO PARA MOMENTOS QUE IMPORTAN</span></div>
     </section>
 
-    <section class="promise-strip" aria-label="Beneficios"><div><span class="promise-icon">✳</span><span><b>Regalos con significado</b><small>Un detalle pensado para ti</small></span></div><div><span class="promise-icon">◇</span><span><b>Selección especial</b><small>Botellas para cada ocasión</small></span></div><div><span class="promise-icon">♡</span><span><b>Personaliza tu mensaje</b><small>Hazlo verdaderamente tuyo</small></span></div><div><span class="promise-icon">↗</span><span><b>Atención cercana</b><small>Te ayudamos a elegir</small></span></div></section>
+    <section class="promise-strip" aria-label="Beneficios"><div><span class="promise-icon">✳</span><span><b>Regalos con significado</b><small>Un detalle pensado para ti</small></span></div><div><span class="promise-icon">◇</span><span><b>Selección especial</b><small>Botellas para cada ocasión</small></span></div><div><span class="promise-icon">↗</span><span><b>Atención cercana</b><small>Te ayudamos a elegir</small></span></div></section>
 
     <section class="section categories-section" id="categorias">
-      <div class="section-heading"><div><p class="eyebrow dark-eyebrow">ENCUENTRA EL BRINDIS</p><h2>¿Qué vamos a <em>celebrar?</em></h2></div><p>Desde un detalle espontáneo hasta una ocasión que recordarás toda la vida.</p></div>
+      <div class="section-heading"><div><p class="eyebrow dark-eyebrow">ENCUENTRA EL BRINDIS</p><h2>Elige tu <em>categoría.</em></h2></div><p>Desde un detalle espontáneo hasta una ocasión que recordarás toda la vida.</p></div>
       <div class="category-grid" id="categoryGrid"></div>
     </section>
 
-    <section class="feature-banner" id="nosotros">
-      <div class="feature-image"><div class="feature-image-ring"></div><div class="feature-mini-box"><span>KAIROS</span><b>✳</b><small>HECHO PARA CELEBRAR</small></div></div>
-      <div class="feature-copy"><p class="eyebrow dark-eyebrow">EL MOMENTO ES AHORA</p><h2>Los grandes sueños<br>también empiezan<br>con <em>pequeños brindis.</em></h2><p>Kairos nace de una idea sencilla: darle un lugar a eso que estás construyendo. Una meta cumplida, un proyecto que despega o una persona que merece saber cuánto importa.</p><a href="#catalogo" class="text-link">Encuentra tu próximo brindis <span>↗</span></a></div>
-    </section>
-
     <section class="section catalog-section" id="catalogo">
-      <div class="section-heading catalog-heading"><div><p class="eyebrow dark-eyebrow">UNA SELECCIÓN CON INTENCIÓN</p><h2>Encuentra tu <em>favorito.</em></h2></div><a class="text-link desktop-only" href="#catalogo" id="clearFilters">Ver toda la colección <span>↗</span></a></div>
+      <div class="section-heading catalog-heading"><div><p class="eyebrow dark-eyebrow">UNA SELECCIÓN CON INTENCIÓN</p><h2>Encuentra tu <em>favorito.</em></h2></div></div>
       <div class="catalog-tools"><div id="filterChips" class="filter-chips"><button class="filter-chip active" data-category="Todos">Todo</button></div><div class="catalog-controls"><label class="sr-only" for="catalogSearch">Buscar producto</label><div class="inline-search"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg><input id="catalogSearch" type="search" placeholder="Buscar producto"></div><label class="sr-only" for="sortSelect">Ordenar productos</label><select id="sortSelect"><option value="featured">Destacados</option><option value="price-asc">Precio: menor a mayor</option><option value="price-desc">Precio: mayor a menor</option><option value="name">Nombre A–Z</option></select></div></div>
       <div class="catalog-meta"><span id="productCount">Productos seleccionados</span><span class="stock-note"><span></span> Disponibilidad por confirmar</span></div>
       <div class="product-grid" id="productGrid"></div>
@@ -69,25 +65,22 @@
       <p class="catalog-disclaimer">Los productos, precios e imágenes de esta demostración son ejemplos editables. Confirma inventario, precios y cobertura antes de publicar la tienda.</p>
     </section>
 
-    <section class="gift-section" id="anchetas">
-      <div class="gift-copy"><p class="eyebrow">UN REGALO A TU MANERA</p><h2>Elige la caja.<br>Elige la botella.<br><em>Cuenta tu historia.</em></h2><p>Arma una experiencia especial con empaque, una selección de bebidas y unas palabras que solo tú podrías dedicar.</p><a class="button button-light" href="#builder">Armar mi regalo <span>↗</span></a></div>
-      <div class="gift-visual"><div class="gift-loop"></div><div class="gift-present"><div class="present-lid"></div><div class="present-body"><div class="present-ribbon-v"></div><div class="present-ribbon-h"></div><div class="present-card"><span>PARA TI</span><b>KAIROS</b><small>CON CARIÑO, SIEMPRE.</small></div></div></div><span class="gift-star star-a">✳</span><span class="gift-star star-b">✦</span><span class="gift-caption">UN DETALLE QUE HABLA POR TI</span></div>
-    </section>
-
     <section class="section builder-section" id="builder">
-      <div class="section-heading"><div><p class="eyebrow dark-eyebrow">DISEÑA TU DETALLE</p><h2>Arma tu regalo <em>ideal.</em></h2></div><p>Selecciona un empaque, agrega tus productos y termina con un mensaje personal.</p></div>
-      <div class="builder-layout"><div class="builder-main"><div class="builder-step"><div class="step-title"><span>01</span><div><h3>Elige la presentación</h3><p>Una caja para cuidar los detalles.</p></div></div><div class="base-options" id="baseOptions"></div></div><div class="builder-step"><div class="step-title"><span>02</span><div><h3>Agrega las botellas</h3><p>Selecciona los productos que quieres incluir.</p></div></div><div class="builder-product-list" id="builderProductList"></div></div><div class="builder-step"><div class="step-title"><span>03</span><div><h3>Escribe tu mensaje</h3><p>Unas palabras hacen toda la diferencia.</p></div></div><textarea id="giftMessage" maxlength="220" placeholder="Ej. Por todo lo que has logrado y por lo que viene…"></textarea><div class="char-count"><span id="messageCount">0</span>/220 caracteres</div></div></div>
-        <aside class="builder-summary"><p class="eyebrow dark-eyebrow">TU CREACIÓN</p><h3>Un regalo único.</h3><div id="builderSummary" class="builder-summary-items"><p class="muted">Elige una presentación y agrega productos para comenzar.</p></div><div class="summary-total"><span>Total estimado</span><b id="builderTotal">$ 0</b></div><p class="summary-small">Valor estimado, sujeto a inventario y confirmación de envío.</p><button class="button button-dark full-width" id="addGiftToCart">Agregar regalo a la bolsa</button><button class="text-button full-width" id="resetBuilder">Empezar de nuevo</button></aside></div>
+      <div class="section-heading"><div><p class="eyebrow dark-eyebrow">DISEÑA TU DETALLE</p><h2>Arma tu regalo <em>ideal.</em></h2></div><p>Elige tu caja y combina los productos para crear un regalo especial.</p></div>
+      <div class="builder-layout"><div class="builder-main"><div class="builder-step"><div class="step-title"><span>01</span><div><h3>Asigna una caja a cada botella</h3><p>Regla sencilla: 1 botella = 1 caja. Si eliges 3 botellas, selecciona 3 cajas; puedes combinar estilos.</p></div></div><p id="boxSelectionNote" class="box-selection-note">Primero elige tus botellas; luego asigna una caja por cada una.</p><div class="base-options" id="baseOptions"></div></div><div class="builder-step"><div class="step-title"><span>02</span><div><h3>Elige tus botellas</h3><p>Selecciona cantidades. Después asigna una caja por cada botella elegida.</p></div></div><div class="builder-product-list" id="builderProductList"></div></div></div>
+        <aside class="builder-summary"><p class="eyebrow dark-eyebrow">TU CREACIÓN</p><h3>Un regalo único.</h3><div id="builderSummary" class="builder-summary-items"><p class="muted">Elige una presentación y agrega productos para comenzar.</p></div><div class="summary-total"><span>Total estimado</span><b id="builderTotal">$ 0</b></div><p class="summary-small">Valor estimado, sujeto a inventario y confirmación de envío.</p><button class="button button-dark full-width" id="addGiftToCart">Continuar con mi regalo</button><button class="text-button full-width" id="resetBuilder">Empezar de nuevo</button></aside></div>
     </section>
 
-    <section class="quote-section"><span class="quote-mark">“</span><p>No esperes a tenerlo todo para celebrar.<br><em>Celebra todo lo que te acerca a tus sueños.</em></p><span class="quote-signature">KAIROS — UN BRINDIS PARA SOÑAR</span></section>
+    <section class="quote-section" id="esencia"><span class="quote-mark">“</span><p>No esperes a tenerlo todo para celebrar.<br><em>Celebra todo lo que te acerca a tus sueños.</em></p><span class="quote-signature">KAIROS — UN BRINDIS PARA SOÑAR</span></section>
 
     <section class="newsletter-section"><div><p class="eyebrow dark-eyebrow">NOTAS PARA CELEBRAR</p><h2>Un motivo más para <em>brindar.</em></h2><p>Déjanos tus datos para conocer nuevas ediciones, ideas de regalo y colecciones especiales.</p></div><form id="newsletterForm" class="newsletter-form"><label class="sr-only" for="newsletterEmail">Correo electrónico</label><input type="email" id="newsletterEmail" placeholder="Tu correo electrónico" required><button type="submit" aria-label="Enviar correo">↗</button><small id="newsletterMessage">Sin spam, solo buenas razones para celebrar.</small></form></section>
   </main>
 
-  <footer class="site-footer"><div class="footer-main"><div class="footer-brand"><a class="brand brand-footer" href="#inicio"><img class="brand-logo-image" src="images/kairos-logo.jpeg" alt="KAIROS — Un brindis para soñar"></a><p>Los momentos importantes merecen algo más que un regalo. Merecen una historia.</p></div><div class="footer-links"><b>Explora</b><a href="#catalogo">Tienda</a><a href="#categorias">Categorías</a><a href="#anchetas">Regalos personalizados</a><a href="#nosotros">Nuestra esencia</a><button class="text-button admin-link admin-entry" id="adminOpen">Administrador ↗</button></div><div class="footer-links"><b>Atención</b><a href="#contacto" id="contactLink">Contáctanos</a><a href="#legal">Envíos y entregas</a><a href="#legal">Términos y condiciones</a><a href="#legal">Política de privacidad</a></div><div class="footer-contact"><b>¿Un regalo especial?</b><p>Te ayudamos a crear un detalle que diga lo que las palabras no siempre alcanzan.</p><a id="whatsappFooter" class="button button-outline-light" href="#">Escríbenos por WhatsApp ↗</a></div></div><div class="footer-bottom" id="legal"><span>© <span id="yearNow"></span> KAIROS. Todos los derechos reservados.</span><span>El exceso de alcohol es perjudicial para la salud.</span><span>Prohíbese el expendio de bebidas embriagantes a menores de edad.</span></div><div class="footer-admin"><span>Panel privado de administración</span><span>Venta exclusiva a mayores de 18 años.</span></div></footer>
+  <footer class="site-footer"><div class="footer-main"><div class="footer-brand"><a class="brand brand-footer" href="#inicio"><img class="brand-logo-image" src="images/kairos-logo.jpeg" alt="KAIROS — Un brindis para soñar"></a><p>Los momentos importantes merecen algo más que un regalo. Merecen una historia.</p></div><div class="footer-links"><b>Explora</b><a href="#catalogo">Tienda</a><a href="#categorias">Categorías</a><a href="#builder">Regalos personalizados</a><a href="#esencia">Nuestra esencia</a><button class="text-button admin-link admin-entry" id="adminOpen">Administrador ↗</button></div><div class="footer-links"><b>Atención</b><a href="#contacto" id="contactLink">Contáctanos</a><a href="#legal">Envíos y entregas</a><a href="#legal">Términos y condiciones</a><a href="#legal">Política de privacidad</a></div><div class="footer-contact"><b>¿Un regalo especial?</b><p>Te ayudamos a crear un detalle que diga lo que las palabras no siempre alcanzan.</p><a id="whatsappFooter" class="button button-outline-light" href="#">Escríbenos por WhatsApp ↗</a></div></div><div class="footer-bottom" id="legal"><span>© <span id="yearNow"></span> KAIROS. Todos los derechos reservados.</span><span>El exceso de alcohol es perjudicial para la salud.</span><span>Prohíbese el expendio de bebidas embriagantes a menores de edad.</span></div><div class="footer-admin"><span>Panel privado de administración</span><span>Venta exclusiva a mayores de 18 años.</span></div></footer>
 
   <div class="overlay" id="cartOverlay"></div><aside class="cart-drawer" id="cartDrawer" aria-label="Tu bolsa de compras" aria-hidden="true"><div class="drawer-head"><div><p class="eyebrow dark-eyebrow">TU SELECCIÓN</p><h2>Tu bolsa <span id="drawerCount">(0)</span></h2></div><button class="icon-button" id="cartClose" aria-label="Cerrar bolsa">×</button></div><div id="cartItems" class="cart-items"><div class="cart-empty"><div>✳</div><h3>Aún no hay brindis.</h3><p>Explora la colección y encuentra algo especial.</p><button class="button button-dark" id="continueShopping">Explorar productos</button></div></div><div class="drawer-bottom"><div class="drawer-subtotal"><span>Subtotal estimado</span><b id="cartSubtotal">$ 0</b></div><p>El precio final, la disponibilidad y el envío se confirman por WhatsApp.</p><button class="button button-dark full-width" id="checkoutButton">Finalizar pedido por WhatsApp ↗</button><button class="text-button full-width" id="clearCart">Vaciar bolsa</button></div></aside>
+
+  <div class="modal-overlay" id="productDetailModal" aria-hidden="true"><div class="product-detail-card"><button class="icon-button product-detail-close" id="productDetailClose" aria-label="Cerrar detalle">×</button><div id="productDetailContent"></div></div></div>
 
   <div class="modal-overlay" id="ageModal"><div class="age-card"><div class="age-logo">K<span>✳</span></div><p class="eyebrow dark-eyebrow">ANTES DE CONTINUAR</p><h2>Los buenos brindis<br>son para <em>mayores de edad.</em></h2><p>Para ingresar a KAIROS debes tener 18 años o más.</p><div class="age-actions"><button class="button button-dark full-width" id="ageConfirm">Sí, tengo 18 años o más</button><button class="button button-outline full-width" id="ageDeny">No tengo 18 años</button></div><small>El consumo excesivo de alcohol es perjudicial para la salud.</small></div></div>
 

@@ -5,7 +5,7 @@
   const clone = value => JSON.parse(JSON.stringify(value));
   const money = value => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(Number(value) || 0).replace('COP', '').trim();
   const slug = value => String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  const state = { category: 'Todos', query: '', sort: 'featured', cart: [], selectedBase: null, giftItems: {}, giftMessage: '', mobileNav: false, searchOpen: false, editingProductId: null };
+  const state = { category: 'Todos', query: '', sort: 'featured', cart: [], selectedBase: null, selectedBases: {}, giftItems: {}, detailProductId: null, mobileNav: false, searchOpen: false, editingProductId: null };
   const seed = clone(window.KAIROS_CATALOG);
   let catalog = loadCatalog();
 
@@ -39,9 +39,9 @@
     }, { once: true });
   }
   function productById(id) { return catalog.products.find(product => product.id === id); }
-  function getCategories() { return catalog.categories.filter((value, index, arr) => value && arr.indexOf(value) === index); }
+  function getCategories() { return ['Vinos','Whisky','Tequila','Champagne','Aguardiente','Espumosos','Sin alcohol','Regalos']; }
   function categoryIcons(category) {
-    const names = { 'Vinos': '◒', 'Whisky': '♜', 'Tequila': '✳', 'Espumantes': '✧', 'Cervezas': '▥', 'Sin alcohol': '◌', 'Café y gourmet': '⌁', 'Regalos': '◇' };
+    const names = { 'Vinos': '◒', 'Whisky': '♜', 'Tequila': '✳', 'Champagne': '✧', 'Aguardiente': '◈', 'Espumosos': '✧', 'Cervezas': '▥', 'Sin alcohol': '◌', 'Café y gourmet': '⌁', 'Regalos': '◇' };
     return names[category] || '✳';
   }
   function productImage(product, compact = false) {
@@ -53,7 +53,7 @@
   function renderCategories() {
     const grid = $('#categoryGrid'); grid.replaceChildren();
     const categoryData = getCategories().map((name, i) => ({ name, icon: categoryIcons(name), index: i }));
-    categoryData.slice(0, 8).forEach((category, index) => {
+    categoryData.forEach((category, index) => {
       const count = catalog.products.filter(product => product.category === category.name).length;
       const card = document.createElement('button'); card.className = `category-card category-card-${(index % 4) + 1}`; card.type = 'button';
       const top = document.createElement('div'); top.className = 'category-card-top';
@@ -94,22 +94,54 @@
     grid.classList.toggle('hidden', items.length === 0);
     items.forEach(product => {
       const card = document.createElement('article'); card.className = 'product-card';
-      const imageWrap = productImage(product);
+      const imageWrap = productImage(product); imageWrap.classList.add('product-detail-trigger'); imageWrap.setAttribute('role','button'); imageWrap.setAttribute('tabindex','0'); imageWrap.setAttribute('aria-label', `Ver detalles de ${product.name}`); imageWrap.addEventListener('click', () => openProductDetail(product.id)); imageWrap.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openProductDetail(product.id); } });
       const top = document.createElement('div'); top.className = 'product-image-top';
       if (product.badge) { const badge = document.createElement('span'); badge.className = 'product-badge'; badge.textContent = product.badge; top.append(badge); }
       if (!product.available) { const sold = document.createElement('span'); sold.className = 'sold-badge'; sold.textContent = 'Agotado'; top.append(sold); }
       imageWrap.append(top);
       const details = document.createElement('div'); details.className = 'product-details';
       const eyebrow = document.createElement('p'); eyebrow.className = 'product-category'; eyebrow.textContent = `${product.category}${product.style ? ` · ${product.style}` : ''}`;
-      const name = document.createElement('h3'); name.textContent = product.name;
+      const name = document.createElement('h3'); name.textContent = product.name; name.classList.add('product-detail-trigger'); name.tabIndex = 0; name.setAttribute('role','button'); name.setAttribute('aria-label', `Ver detalles de ${product.name}`); name.addEventListener('click', () => openProductDetail(product.id)); name.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openProductDetail(product.id); } });
       const description = document.createElement('p'); description.className = 'product-description'; description.textContent = product.description || 'Una selección para celebrar ese momento especial.';
       const bottom = document.createElement('div'); bottom.className = 'product-bottom'; const prices = document.createElement('div'); prices.className = 'product-prices';
       const price = document.createElement('strong'); price.textContent = money(product.price); prices.append(price);
       if (product.oldPrice && Number(product.oldPrice) > Number(product.price)) { const old = document.createElement('del'); old.textContent = money(product.oldPrice); prices.append(old); }
-      const add = document.createElement('button'); add.className = 'add-product'; add.type = 'button'; add.textContent = product.available ? '+' : '×'; add.setAttribute('aria-label', product.available ? `Añadir ${product.name}` : `${product.name} agotado`); add.disabled = !product.available;
-      add.addEventListener('click', () => addToCart(product.id)); bottom.append(prices, add);
+      const add = document.createElement('button'); add.className = 'add-product'; add.type = 'button'; add.textContent = product.available ? ((state.giftItems[product.id] || 0) > 0 ? `+ ${state.giftItems[product.id]}` : '+') : '×'; add.setAttribute('aria-label', product.available ? `Añadir ${product.name} al regalo. Seleccionadas: ${state.giftItems[product.id] || 0}` : `${product.name} agotado`); add.disabled = !product.available;
+      add.addEventListener('click', () => addProductToGift(product.id)); bottom.append(prices, add);
       details.append(eyebrow, name, description, bottom); card.append(imageWrap, details); grid.append(card);
     });
+  }
+  function openProductDetail(id) {
+    const product = productById(id); if (!product) return; state.detailProductId = id;
+    const holder = $('#productDetailContent'); holder.replaceChildren();
+    const layout = document.createElement('div'); layout.className = 'product-detail-layout';
+    const visual = productImage(product); visual.classList.add('product-detail-visual');
+    const info = document.createElement('div'); info.className = 'product-detail-info';
+    const eyebrow = document.createElement('p'); eyebrow.className = 'eyebrow dark-eyebrow'; eyebrow.textContent = `${product.category}${product.style ? ' · ' + product.style : ''}`;
+    const title = document.createElement('h2'); title.textContent = product.name;
+    const price = document.createElement('strong'); price.className = 'product-detail-price'; price.textContent = money(product.price);
+    const desc = document.createElement('p'); desc.className = 'product-detail-description'; desc.textContent = product.description || 'Una opción especial para regalar y compartir.';
+    const facts = document.createElement('div'); facts.className = 'product-detail-facts';
+    const style = String(product.style || 'Consultar presentación');
+    const size = style.match(/\d+(?:[.,]\d+)?\s?(?:ml|L|g|kg|unidades)/i)?.[0] || 'Consultar tamaño';
+    const alcohol = /sin alcohol|café|gourmet|tarjeta/i.test(`${product.category} ${product.name}`) ? 'Sin alcohol / no aplica' : 'Bebida alcohólica; graduación exacta por confirmar en etiqueta';
+    [[ 'Presentación', size ],['Tipo', product.category],['Alcohol', alcohol],['Ideal para', product.occasion || product.description || 'Celebraciones, agradecimientos y regalos especiales']].forEach(([label,value]) => { const row=document.createElement('div'); row.className='product-fact'; const b=document.createElement('b'); b.textContent=label; const span=document.createElement('span'); span.textContent=value; row.append(b,span); facts.append(row); });
+    const note = document.createElement('p'); note.className='product-detail-note'; note.textContent='Revisa la etiqueta del producto para confirmar la graduación alcohólica y los datos del fabricante. La disponibilidad se confirma al hacer el pedido.';
+    const add = document.createElement('button'); add.className='button button-dark full-width'; add.type='button'; add.textContent='Añadir al regalo'; add.disabled = !product.available; add.textContent = product.category === 'Regalos' ? 'Añadir regalo a la bolsa' : 'Añadir al regalo'; add.addEventListener('click', () => { addProductToGift(id); closeProductDetail(); });
+    info.append(eyebrow,title,price,desc,facts,note,add); layout.append(visual,info); holder.append(layout);
+    $('#productDetailModal').classList.add('show'); $('#productDetailModal').setAttribute('aria-hidden','false'); document.body.classList.add('no-scroll');
+  }
+  function closeProductDetail() { $('#productDetailModal').classList.remove('show'); $('#productDetailModal').setAttribute('aria-hidden','true'); document.body.classList.remove('no-scroll'); }
+  function bottleCount() { return Object.values(state.giftItems).reduce((sum, qty) => sum + Math.max(0, Number(qty)||0), 0); }
+  function boxCount() { return Object.values(state.selectedBases).reduce((sum, qty) => sum + Math.max(0, Number(qty)||0), 0); }
+  function addProductToGift(id) {
+    const product = productById(id);
+    if (!product || !product.available) { toast('Este producto no está disponible por ahora.'); return; }
+    if (product.category === 'Regalos') { addToCart(id); return; }
+    state.giftItems[id] = (state.giftItems[id] || 0) + 1;
+    renderBuilder();
+    toast(`${product.name} se agregó a tu regalo.`);
+    $('#builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
   function addToCart(id, amount = 1) {
     const product = productById(id); if (!product || !product.available) { toast('Este producto no está disponible por ahora.'); return; }
@@ -118,11 +150,13 @@
     persistCart(); renderCart(); toast('Añadido a tu bolsa.');
   }
   function addGiftToCart() {
-    if (!state.selectedBase) { toast('Elige una presentación para tu regalo.'); return; }
     const items = Object.entries(state.giftItems).filter(([_, qty]) => qty > 0);
-    if (!items.length) { toast('Agrega al menos un producto a tu regalo.'); return; }
+    if (!items.length) { toast('Elige al menos una botella.'); return; }
+    const bottles = bottleCount(), boxes = boxCount();
+    if (boxes !== bottles) { toast(`Seleccionaste ${bottles} botella(s): asigna exactamente ${bottles} caja(s). Llevas ${boxes}.`); $('#boxSelectionNote').textContent = `Te faltan ${bottles-boxes} caja(s) para tus ${bottles} botella(s). La regla es 1 botella = 1 caja.`; $('#boxSelectionNote').classList.add('box-selection-warning'); return; }
     const products = items.map(([id, qty]) => ({ id, qty, name: productById(id)?.name || id }));
-    const gift = { type: 'gift', id: `gift-${Date.now()}`, qty: 1, baseId: state.selectedBase.id, baseName: state.selectedBase.name, basePrice: state.selectedBase.price, products, message: state.giftMessage.trim() };
+    const bases = Object.entries(state.selectedBases).filter(([_,qty])=>qty>0).map(([id,qty])=>({id,qty,name:catalog.giftBases.find(b=>b.id===id)?.name||id,price:catalog.giftBases.find(b=>b.id===id)?.price||0}));
+    const gift = { type: 'gift', id: `gift-${Date.now()}`, qty: 1, baseId: bases[0]?.id, baseName: bases.map(b=>`${b.qty} × ${b.name}`).join(', '), basePrice: bases.reduce((sum,b)=>sum+b.qty*b.price,0), boxes:bases, products };
     state.cart.push(gift); persistCart(); renderCart(); toast('Tu regalo se agregó a la bolsa.'); $('#cartDrawer').classList.add('open'); $('#cartOverlay').classList.add('show'); $('#cartDrawer').setAttribute('aria-hidden', 'false');
   }
   function getGiftPrice(item) { return (Number(item.basePrice) || 0) + item.products.reduce((sum, product) => sum + (Number(productById(product.id)?.price) || 0) * product.qty, 0); }
@@ -145,7 +179,6 @@
       if (item.type === 'gift') { title = item.baseName || 'Regalo personalizado'; subtitle = `${item.products.length} referencia(s) · Regalo personalizado`; price = getGiftPrice(item); }
       else { const product = productById(item.id); if (!product) return; title = product.name; subtitle = `${product.category} · Cant. ${item.qty}`; price = cartItemPrice(item); row.append(productImage(product, true)); }
       const detail = document.createElement('div'); detail.className = 'cart-item-detail'; const name = document.createElement('b'); name.textContent = title; const desc = document.createElement('small'); desc.textContent = subtitle; const value = document.createElement('strong'); value.textContent = money(price); detail.append(name, desc, value);
-      if (item.type === 'gift' && item.message) { const msg = document.createElement('small'); msg.className = 'cart-gift-message'; msg.textContent = `“${item.message}”`; detail.append(msg); }
       const remove = document.createElement('button'); remove.className = 'remove-cart-item'; remove.textContent = 'Quitar'; remove.addEventListener('click', () => { state.cart = state.cart.filter(cartItem => cartItem !== item); persistCart(); renderCart(); }); row.append(detail, remove); holder.append(row);
     });
   }
@@ -158,7 +191,6 @@
       if (item.type === 'gift') {
         lines.push(`• ${item.baseName} — ${money(getGiftPrice(item))}`);
         item.products.forEach(product => lines.push(`   - ${product.qty} × ${productById(product.id)?.name || product.name}`));
-        if (item.message) lines.push(`   Mensaje: ${item.message}`);
       } else {
         const product = productById(item.id); if (product) lines.push(`• ${item.qty} × ${product.name} — ${money(cartItemPrice(item))}`);
       }
@@ -170,13 +202,15 @@
   }
   function renderBuilder() {
     const baseHolder = $('#baseOptions'); baseHolder.replaceChildren();
+    const bottles = bottleCount(); const boxes = boxCount();
+    $('#boxSelectionNote').textContent = bottles === 0 ? 'Primero elige tus botellas; luego asigna una caja por cada una.' : `Has elegido ${bottles} botella(s) y ${boxes} caja(s). ${boxes===bottles?'¡Perfecto! Cada botella tiene su caja.':boxes<bottles?`Te faltan ${bottles-boxes} caja(s).`:`Tienes ${boxes-bottles} caja(s) de más.`}`;
+    $('#boxSelectionNote').classList.toggle('box-selection-warning', bottles !== boxes && bottles > 0);
     catalog.giftBases.forEach(base => {
-      const button = document.createElement('button'); button.type = 'button'; button.className = `base-option ${state.selectedBase?.id === base.id ? 'selected' : ''}`;
+      const row = document.createElement('div'); row.className = `base-option box-quantity-option ${state.selectedBases[base.id] ? 'selected' : ''}`;
       const art = document.createElement('span'); art.className = `base-art base-art-${base.tone || 'kraft'}`; art.innerHTML = '<i></i><b>K</b>';
-      const text = document.createElement('span'); text.className = 'base-option-text'; const name = document.createElement('b'); name.textContent = base.name; const desc = document.createElement('small'); desc.textContent = base.description; const capacity = document.createElement('small'); capacity.className = 'base-capacity'; capacity.textContent = base.capacity || '';
-      text.append(name, desc, capacity); const price = document.createElement('strong'); price.textContent = money(base.price); button.append(art, text, price);
-      if (base.featured) { const tag = document.createElement('span'); tag.className = 'base-recommended'; tag.textContent = 'Recomendada'; button.append(tag); }
-      button.addEventListener('click', () => { state.selectedBase = base; renderBuilder(); }); baseHolder.append(button);
+      const text = document.createElement('span'); text.className = 'base-option-text'; const name = document.createElement('b'); name.textContent = base.name; const desc = document.createElement('small'); desc.textContent = base.description; const price = document.createElement('small'); price.className='base-capacity'; price.textContent = `${money(base.price)} por caja`;
+      text.append(name,desc,price); const counter=document.createElement('div'); counter.className='quantity-control box-counter'; const minus=document.createElement('button'); minus.type='button'; minus.textContent='−'; minus.setAttribute('aria-label',`Quitar caja ${base.name}`); const qty=document.createElement('span'); qty.textContent=state.selectedBases[base.id]||0; const plus=document.createElement('button'); plus.type='button'; plus.textContent='+'; plus.setAttribute('aria-label',`Añadir caja ${base.name}`);
+      minus.addEventListener('click',()=>{state.selectedBases[base.id]=Math.max(0,(state.selectedBases[base.id]||0)-1);renderBuilder();}); plus.addEventListener('click',()=>{ state.selectedBases[base.id]=(state.selectedBases[base.id]||0)+1;renderBuilder(); }); counter.append(minus,qty,plus); row.append(art,text,counter); baseHolder.append(row);
     });
     const itemsHolder = $('#builderProductList'); itemsHolder.replaceChildren();
     catalog.products.filter(product => product.available).forEach(product => {
@@ -185,15 +219,14 @@
       const counter = document.createElement('div'); counter.className = 'quantity-control'; const minus = document.createElement('button'); minus.type = 'button'; minus.textContent = '−'; minus.setAttribute('aria-label', `Quitar ${product.name}`); const qty = document.createElement('span'); qty.textContent = state.giftItems[product.id] || 0; const plus = document.createElement('button'); plus.type = 'button'; plus.textContent = '+'; plus.setAttribute('aria-label', `Añadir ${product.name}`);
       minus.addEventListener('click', () => { state.giftItems[product.id] = Math.max(0, (state.giftItems[product.id] || 0) - 1); renderBuilder(); }); plus.addEventListener('click', () => { state.giftItems[product.id] = (state.giftItems[product.id] || 0) + 1; renderBuilder(); }); counter.append(minus, qty, plus); row.append(info, counter); itemsHolder.append(row);
     });
-    $('#giftMessage').value = state.giftMessage;
     renderBuilderSummary();
   }
   function renderBuilderSummary() {
-    const holder = $('#builderSummary'); holder.replaceChildren(); let subtotal = state.selectedBase ? Number(state.selectedBase.price) : 0;
-    if (state.selectedBase) { const base = document.createElement('div'); base.className = 'summary-line'; const title = document.createElement('span'); title.textContent = state.selectedBase.name; const price = document.createElement('b'); price.textContent = money(state.selectedBase.price); base.append(title, price); holder.append(base); }
+    const holder = $('#builderSummary'); holder.replaceChildren(); let subtotal = 0;
+    Object.entries(state.selectedBases).filter(([_,qty])=>qty>0).forEach(([id,qty])=>{const box=catalog.giftBases.find(b=>b.id===id);if(!box)return;subtotal+=box.price*qty;const line=document.createElement('div');line.className='summary-line';const title=document.createElement('span');title.textContent=`${qty} × ${box.name}`;const price=document.createElement('b');price.textContent=money(box.price*qty);line.append(title,price);holder.append(line);});
     Object.entries(state.giftItems).filter(([_, qty]) => qty > 0).forEach(([id, qty]) => { const product = productById(id); if (!product) return; subtotal += product.price * qty; const line = document.createElement('div'); line.className = 'summary-line'; const title = document.createElement('span'); title.textContent = `${qty} × ${product.name}`; const price = document.createElement('b'); price.textContent = money(product.price * qty); line.append(title, price); holder.append(line); });
-    if (!state.selectedBase && !Object.values(state.giftItems).some(q => q > 0)) { const empty = document.createElement('p'); empty.className = 'muted'; empty.textContent = 'Elige una presentación y agrega productos para comenzar.'; holder.append(empty); }
-    $('#builderTotal').textContent = money(subtotal); $('#messageCount').textContent = state.giftMessage.length;
+    if (!boxCount() && !Object.values(state.giftItems).some(q => q > 0)) { const empty = document.createElement('p'); empty.className = 'muted'; empty.textContent = 'Elige una presentación y agrega productos para comenzar.'; holder.append(empty); }
+    $('#builderTotal').textContent = money(subtotal);
   }
   function adminOpen() { $('#adminLoginModal').classList.add('show'); document.body.classList.add('no-scroll'); $('#adminEmail').value=''; $('#adminLoginError').textContent=''; setTimeout(() => $('#adminEmail').focus(), 50); }
   function adminLoginClose() { $('#adminLoginModal').classList.remove('show'); document.body.classList.remove('no-scroll'); }
@@ -232,7 +265,6 @@
   $('#catalogSearch').addEventListener('input', event => { state.query = event.target.value; renderProducts(); });
   $('#sortSelect').addEventListener('change', event => { state.sort = event.target.value; renderProducts(); });
   $('#resetFilters').addEventListener('click', () => { state.category = 'Todos'; state.query = ''; $('#catalogSearch').value = ''; renderFilterChips(); renderProducts(); });
-  $('#clearFilters').addEventListener('click', event => { event.preventDefault(); state.category = 'Todos'; state.query = ''; $('#catalogSearch').value = ''; renderFilterChips(); renderProducts(); });
   $('#searchToggle').addEventListener('click', () => { $('#searchBar').classList.toggle('open'); if ($('#searchBar').classList.contains('open')) $('#globalSearch').focus(); });
   function doGlobalSearch() { state.query = $('#globalSearch').value; $('#catalogSearch').value = state.query; state.category = 'Todos'; renderFilterChips(); renderProducts(); $('#catalogo').scrollIntoView({ behavior: 'smooth' }); $('#searchBar').classList.remove('open'); }
   $('#searchGo').addEventListener('click', doGlobalSearch); $('#globalSearch').addEventListener('keydown', event => { if (event.key === 'Enter') doGlobalSearch(); });
@@ -242,8 +274,10 @@
   // Bolsa y builder
   $('#cartOpen').addEventListener('click', openCart); $('#cartClose').addEventListener('click', closeCart); $('#cartOverlay').addEventListener('click', closeCart); $('#continueShopping').addEventListener('click', closeCart); $('#checkoutButton').addEventListener('click', checkout);
   $('#clearCart').addEventListener('click', () => { state.cart = []; persistCart(); renderCart(); toast('Tu bolsa está vacía.'); });
-  $('#addGiftToCart').addEventListener('click', addGiftToCart); $('#giftMessage').addEventListener('input', event => { state.giftMessage = event.target.value; renderBuilderSummary(); });
-  $('#resetBuilder').addEventListener('click', () => { state.selectedBase = null; state.giftItems = {}; state.giftMessage = ''; renderBuilder(); toast('El regalo se reinició.'); });
+  $('#addGiftToCart').addEventListener('click', addGiftToCart);
+  $('#productDetailClose').addEventListener('click', closeProductDetail);
+  $('#productDetailModal').addEventListener('click', e => { if(e.target.id==='productDetailModal') closeProductDetail(); });
+  $('#resetBuilder').addEventListener('click', () => { state.selectedBase = null; state.selectedBases = {}; state.giftItems = {}; renderBuilder(); toast('El regalo se reinició.'); });
 
   // Edad: se recuerda en este navegador. El aviso no reemplaza verificación de edad ni obligaciones legales.
   try { if (sessionStorage.getItem('kairos_age_confirmed') === 'yes') $('#ageModal').classList.remove('show'); else $('#ageModal').classList.add('show'); } catch (_) { $('#ageModal').classList.add('show'); }
@@ -271,9 +305,9 @@
   // Contacto. Cambia el número en js/catalog.js por el número real de WhatsApp.
   function setupWhatsappLink() {
     const number = String(catalog.whatsappNumber || '').replace(/\D/g, '');
-    $('#whatsappFooter').href = number.length >= 10 && number !== '573000000000' ? `https://wa.me/${number}?text=${encodeURIComponent('Hola, KAIROS. Quisiera información sobre sus productos y regalos.')}` : 'javascript:void(0)';
+    $('#whatsappFooter').href = number.length >= 10 ? `https://wa.me/${number}?text=${encodeURIComponent('Hola, KAIROS. Quisiera información sobre sus productos y regalos.')}` : 'javascript:void(0)';
     $('#whatsappFooter').addEventListener('click', event => { if ($('#whatsappFooter').getAttribute('href') === 'javascript:void(0)') { event.preventDefault(); toast('Configura tu WhatsApp en js/catalog.js antes de publicar.'); } });
-    $('#contactLink').addEventListener('click', event => { event.preventDefault(); if (number.length >= 10 && number !== '573000000000') window.open(`https://wa.me/${number}?text=${encodeURIComponent('Hola, KAIROS. Quisiera recibir asesoría para elegir un regalo.')}`, '_blank', 'noopener,noreferrer'); else toast('Configura tu WhatsApp en js/catalog.js antes de publicar.'); });
+    $('#contactLink').addEventListener('click', event => { event.preventDefault(); if (number.length >= 10) window.open(`https://wa.me/${number}?text=${encodeURIComponent('Hola, KAIROS. Quisiera recibir asesoría para elegir un regalo.')}`, '_blank', 'noopener,noreferrer'); else toast('Configura tu WhatsApp en js/catalog.js antes de publicar.'); });
   }
   $('#newsletterForm').addEventListener('submit', event => { event.preventDefault(); const email = $('#newsletterEmail').value.trim(); $('#newsletterMessage').textContent = `¡Gracias! Para habilitar suscripciones reales, conecta un servicio de email marketing. (${email})`; $('#newsletterMessage').classList.add('success-message'); });
   $('#yearNow').textContent = new Date().getFullYear();

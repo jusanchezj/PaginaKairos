@@ -96,8 +96,3 @@ El acceso por correo sin contraseña no es una autenticación segura: cualquier 
 Los productos ahora apuntan a `images/products/`. El paquete incluye imágenes SVG de marcador para que la web funcione desde el primer momento. Para descargar las fotos de referencia que antes estaban enlazadas desde Unsplash, ejecuta desde esta carpeta `python3 descargar_imagenes.py` en un equipo con internet. El script guardará los JPG en `images/products/` y cambiará las rutas en `js/catalog.js` para utilizar los JPG descargados. Reemplaza las fotos de referencia por fotografías propias y verifica los derechos de uso antes de publicar.
 
 **Importante:** el administrador sigue guardando cambios en el navegador; el botón Descargar catalog.js genera un archivo para reemplazar el catálogo del código fuente manualmente. No edita por sí solo los archivos del disco por restricciones de seguridad del navegador.
-# KAIROS
-# KAIROS
-# KAIROS
-# PaginaKairos
-# PaginaKairos
