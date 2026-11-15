@@ -1,13 +1,13 @@
 # KAIROS — tienda demo
 
-Sitio web responsive para una marca de botellas, licores y regalos personalizados. Está inspirado en patrones comunes de tiendas de regalos y licores (portada, categorías, catálogo, constructor de regalo, bolsa y pedido por WhatsApp), pero usa estructura, textos y branding propios de KAIROS.
+Sitio web responsive para KAIROS: una selección de botellas con una presentación de regalo única, bolsa de compras y pedidos por WhatsApp. Cada botella incluye caja de madera, etiqueta para el sueño y separador KAIROS.
 
 ## Archivos
 
 - `index.html`: estructura de páginas y ventanas de la tienda.
 - `css/styles.css`: todos los estilos y el diseño responsive.
-- `js/catalog.js`: **archivo principal para editar productos, categorías, cajas y WhatsApp**.
-- `js/app.js`: lógica de filtros, bolsa, creador de regalos y administrador local.
+- `js/catalog.js`: **archivo principal para editar productos, categorías y WhatsApp**.
+- `js/app.js`: lógica de filtros, bolsa, pedidos y administrador local.
 
 ## Cómo abrir
 
@@ -94,5 +94,7 @@ El acceso por correo sin contraseña no es una autenticación segura: cualquier 
 ## Fotos locales
 
 Los productos ahora apuntan a `images/products/`. El paquete incluye imágenes SVG de marcador para que la web funcione desde el primer momento. Para descargar las fotos de referencia que antes estaban enlazadas desde Unsplash, ejecuta desde esta carpeta `python3 descargar_imagenes.py` en un equipo con internet. El script guardará los JPG en `images/products/` y cambiará las rutas en `js/catalog.js` para utilizar los JPG descargados. Reemplaza las fotos de referencia por fotografías propias y verifica los derechos de uso antes de publicar.
+
+Las fotos del empaque KAIROS que aparecen en la sección **La presentación** están en `images/presentation/`.
 
 **Importante:** el administrador sigue guardando cambios en el navegador; el botón Descargar catalog.js genera un archivo para reemplazar el catálogo del código fuente manualmente. No edita por sí solo los archivos del disco por restricciones de seguridad del navegador.

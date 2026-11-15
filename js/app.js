@@ -5,7 +5,7 @@
   const clone = value => JSON.parse(JSON.stringify(value));
   const money = value => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(Number(value) || 0).replace('COP', '').trim();
   const slug = value => String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  const state = { category: 'Todos', query: '', sort: 'featured', cart: [], selectedBase: null, selectedBases: {}, giftItems: {}, detailProductId: null, mobileNav: false, searchOpen: false, editingProductId: null };
+  const state = { category: 'Todos', query: '', sort: 'featured', cart: [], detailProductId: null, mobileNav: false, searchOpen: false, editingProductId: null };
   const seed = clone(window.KAIROS_CATALOG);
   let catalog = loadCatalog();
 
@@ -14,7 +14,33 @@
       const saved = localStorage.getItem('kairos_catalog_override');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed.products) && Array.isArray(parsed.categories)) return { ...clone(seed), ...parsed };
+        if (Array.isArray(parsed.products) && Array.isArray(parsed.categories)) {
+          const genericDescriptions = new Set([
+            'Una selección especial para celebrar metas cumplidas y ocasiones memorables.',
+            'Una alternativa versátil para compartir una buena conversación.',
+            'Ideal para acompañar comidas y regalar a quienes disfrutan el vino.',
+            'Fresco y aromático, ideal para comidas ligeras y encuentros de día.',
+            'Un whisky de perfil intenso para celebraciones y regalos especiales.',
+            'Una alternativa suave para disfrutar después de una comida.'
+          ]);
+          const products = parsed.products.map(savedProduct => {
+            const current = seed.products.find(product => product.id === savedProduct.id);
+            if (!current) return savedProduct;
+            const merged = { ...current, ...savedProduct };
+            if (genericDescriptions.has(savedProduct.description)) merged.description = current.description;
+            if (savedProduct.style === 'Tinto · 750 ml' || savedProduct.style === 'Sauvignon Blanc · 750 ml') merged.style = current.style;
+            if (canonicalCategory(savedProduct.category) === 'vino de reserva') merged.category = 'Vino de reserva';
+            if (current.id === 'wine-premium-ramon' && /bilbado/i.test(savedProduct.name || '')) merged.name = current.name;
+            return merged;
+          });
+          const savedIds = new Set(products.map(product => product.id));
+          seed.products.filter(product => !savedIds.has(product.id)).forEach(product => products.push(clone(product)));
+          const categories = [...(parsed.categories || [])];
+          products.forEach(product => {
+            if (product.category && !categories.some(category => canonicalCategory(category) === canonicalCategory(product.category))) categories.push(product.category);
+          });
+          return { ...clone(seed), ...parsed, categories, products };
+        }
       }
     } catch (error) { console.warn('No se pudo leer el catálogo local.', error); }
     return clone(seed);
@@ -39,10 +65,31 @@
     }, { once: true });
   }
   function productById(id) { return catalog.products.find(product => product.id === id); }
-  function getCategories() { return ['Vinos','Whisky','Tequila','Champagne','Aguardiente','Espumosos','Sin alcohol','Regalos']; }
+  function canonicalCategory(value) {
+    const category = String(value || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (category === 'vinos de reserva' || category === 'vino de reserva') return 'vino de reserva';
+    return category;
+  }
+  function getCategories() { return Array.isArray(catalog.categories) ? catalog.categories : ['Vinos','Whisky','Tequila','Champagne','Aguardiente','Espumosos','Sin alcohol','Regalos']; }
   function categoryIcons(category) {
-    const names = { 'Vinos': '◒︎', 'Whisky': '♜︎', 'Tequila': '✳︎', 'Champagne': '✧︎', 'Aguardiente': '◈︎', 'Espumosos': '✧︎', 'Cervezas': '▥︎', 'Sin alcohol': '◌︎', 'Café y gourmet': '⌁︎', 'Regalos': '◇︎' };
-    return names[category] || '✳︎';
+    const names = { 'Vinos': 'wine', 'Vino de reserva': 'wine', 'Whisky': 'whisky', 'Tequila': 'agave', 'Champagne': 'flute', 'Aguardiente': 'bottle', 'Espumosos': 'flute', 'Cervezas': 'glass', 'Sin alcohol': 'bottle', 'Café y gourmet': 'cup', 'Regalos': 'gift' };
+    return names[category] || 'bottle';
+  }
+  function categoryIconNode(name) {
+    const paths = {
+      wine: 'M10 3h12v7l-3 5v13H13V15l-3-5V3Zm1 6h10M14 20h4',
+      whisky: 'M7 5h18l-2 23H9L7 5Zm2 6h14M12 16h8',
+      agave: 'M16 28V12m0 7-7 5m7-8 7 5M16 14l-4-8m4 8 4-9M9 24l-5-1m19-1 5-2M12 6l-3-3m11 2 3-3',
+      flute: 'M9 3h14l-2 10a6 6 0 0 1-5 5 6 6 0 0 1-5-5L9 3Zm7 15v8m-5 3h10m-9-20h12',
+      bottle: 'M13 3h6v5l3 3v17H10V11l3-3V3Zm0 5h6m-7 12h12',
+      glass: 'M8 4h16l-2 24H10L8 4Zm2 7h12',
+      cup: 'M6 11h18l-2 17H8L6 11Zm3 0V6h12v5m3 3h2a3 3 0 0 1 0 6h-3',
+      gift: 'M5 14h22v14H5zM3 9h26v5H3zM16 9v19M16 9c-1-7-9-7-8-2 0 2 3 3 8 2Zm0 0c1-7 9-7 8-2 0 2-3 3-8 2Z'
+    };
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 32 32'); svg.setAttribute('aria-hidden', 'true');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path'); path.setAttribute('d', paths[name] || paths.bottle); svg.append(path);
+    return svg;
   }
   function productImage(product, compact = false) {
     const wrapper = document.createElement('div'); wrapper.className = compact ? 'mini-product-image' : 'product-image';
@@ -52,17 +99,22 @@
   }
   function renderCategories() {
     const grid = $('#categoryGrid'); grid.replaceChildren();
-    const categoryData = getCategories().map((name, i) => ({ name, icon: categoryIcons(name), index: i }));
+    const categoryData = getCategories().map((sourceName, i) => ({
+      name: sourceName === 'Sin alcohol' ? 'Vino de reserva' : sourceName,
+      filter: sourceName === 'Sin alcohol' ? 'Vinos' : sourceName,
+      icon: categoryIcons(sourceName === 'Sin alcohol' ? 'Vino de reserva' : sourceName),
+      index: i
+    }));
     categoryData.forEach((category, index) => {
-      const count = catalog.products.filter(product => product.category === category.name).length;
+      const count = catalog.products.filter(product => canonicalCategory(product.category) === canonicalCategory(category.filter)).length;
       const card = document.createElement('button'); card.className = `category-card category-card-${(index % 4) + 1}`; card.type = 'button';
       const top = document.createElement('div'); top.className = 'category-card-top';
-      const icon = document.createElement('span'); icon.className = 'category-symbol'; icon.textContent = category.icon;
-      const arrow = document.createElement('span'); arrow.className = 'category-arrow'; arrow.textContent = '↗︎';
+      const icon = document.createElement('span'); icon.className = 'category-symbol'; icon.append(categoryIconNode(category.icon));
+      const arrow = document.createElement('span'); arrow.className = 'category-arrow'; arrow.textContent = '↗';
       top.append(icon, arrow);
       const title = document.createElement('h3'); title.textContent = category.name;
       const note = document.createElement('p'); note.textContent = `${count} ${count === 1 ? 'opción' : 'opciones'} para elegir`;
-      card.append(top, title, note); card.addEventListener('click', () => { state.category = category.name; renderFilterChips(); renderProducts(); document.getElementById('catalogo').scrollIntoView({ behavior: 'smooth' }); }); grid.append(card);
+      card.append(top, title, note); card.addEventListener('click', () => { state.category = category.filter; renderFilterChips(); renderProducts(); document.getElementById('catalogo').scrollIntoView({ behavior: 'smooth' }); }); grid.append(card);
     });
     renderFilterChips();
   }
@@ -76,7 +128,7 @@
   }
   function filteredProducts() {
     let items = catalog.products.filter(product => {
-      const matchesCategory = state.category === 'Todos' || product.category === state.category;
+      const matchesCategory = state.category === 'Todos' || canonicalCategory(product.category) === canonicalCategory(state.category);
       const query = state.query.trim().toLowerCase();
       const matchesQuery = !query || [product.name, product.category, product.style, product.description].some(value => String(value || '').toLowerCase().includes(query));
       return matchesCategory && matchesQuery;
@@ -106,9 +158,11 @@
       const bottom = document.createElement('div'); bottom.className = 'product-bottom'; const prices = document.createElement('div'); prices.className = 'product-prices';
       const price = document.createElement('strong'); price.textContent = money(product.price); prices.append(price);
       if (product.oldPrice && Number(product.oldPrice) > Number(product.price)) { const old = document.createElement('del'); old.textContent = money(product.oldPrice); prices.append(old); }
-      const add = document.createElement('button'); add.className = 'add-product'; add.type = 'button'; add.textContent = product.available ? ((state.giftItems[product.id] || 0) > 0 ? `+ ${state.giftItems[product.id]}` : '+') : '×'; add.setAttribute('aria-label', product.available ? `Añadir ${product.name} al regalo. Seleccionadas: ${state.giftItems[product.id] || 0}` : `${product.name} agotado`); add.disabled = !product.available;
-      add.addEventListener('click', () => addProductToGift(product.id)); bottom.append(prices, add);
-      details.append(eyebrow, name, description, bottom); card.append(imageWrap, details); grid.append(card);
+      const add = document.createElement('button'); add.className = 'add-product'; add.type = 'button'; add.textContent = product.available ? 'Añadir' : 'Agotado'; add.setAttribute('aria-label', product.available ? `Añadir ${product.name} a la bolsa` : `${product.name} agotado`); add.disabled = !product.available;
+      add.addEventListener('click', () => addToCart(product.id)); bottom.append(prices, add);
+      details.append(eyebrow, name, description);
+      if (product.category !== 'Regalos') { const inclusion = document.createElement('p'); inclusion.className = 'product-inclusion'; inclusion.textContent = 'Presentación KAIROS incluida'; details.append(inclusion); }
+      details.append(bottom); card.append(imageWrap, details); grid.append(card);
     });
   }
   function openProductDetail(id) {
@@ -122,42 +176,21 @@
     const price = document.createElement('strong'); price.className = 'product-detail-price'; price.textContent = money(product.price);
     const desc = document.createElement('p'); desc.className = 'product-detail-description'; desc.textContent = product.description || 'Una opción especial para regalar y compartir.';
     const facts = document.createElement('div'); facts.className = 'product-detail-facts';
-    const style = String(product.style || 'Consultar presentación');
-    const size = style.match(/\d+(?:[.,]\d+)?\s?(?:ml|L|g|kg|unidades)/i)?.[0] || 'Consultar tamaño';
+    const size = String(product.style || 'Presentación por confirmar');
     const alcohol = /sin alcohol|café|gourmet|tarjeta/i.test(`${product.category} ${product.name}`) ? 'Sin alcohol / no aplica' : 'Bebida alcohólica; graduación exacta por confirmar en etiqueta';
-    [[ 'Presentación', size ],['Tipo', product.category],['Alcohol', alcohol],['Ideal para', product.occasion || product.description || 'Celebraciones, agradecimientos y regalos especiales']].forEach(([label,value]) => { const row=document.createElement('div'); row.className='product-fact'; const b=document.createElement('b'); b.textContent=label; const span=document.createElement('span'); span.textContent=value; row.append(b,span); facts.append(row); });
-    const note = document.createElement('p'); note.className='product-detail-note'; note.textContent='Revisa la etiqueta del producto para confirmar la graduación alcohólica y los datos del fabricante. La disponibilidad se confirma al hacer el pedido.';
-    const add = document.createElement('button'); add.className='button button-dark full-width'; add.type='button'; add.textContent='Añadir al regalo'; add.disabled = !product.available; add.textContent = product.category === 'Regalos' ? 'Añadir regalo a la bolsa' : 'Añadir al regalo'; add.addEventListener('click', () => { addProductToGift(id); closeProductDetail(); });
+    const packageContents = product.category === 'Regalos' ? 'Presentación digital' : 'Caja de madera, etiqueta para tu sueño y separador KAIROS. Incluidos con cada botella.';
+    [[ 'Formato', size ],['Tipo', product.category],['Incluye', packageContents],['Alcohol', alcohol],['Ideal para', product.occasion || product.description || 'Celebraciones, agradecimientos y regalos especiales']].forEach(([label,value]) => { const row=document.createElement('div'); row.className='product-fact'; const b=document.createElement('b'); b.textContent=label; const span=document.createElement('span'); span.textContent=value; row.append(b,span); facts.append(row); });
+    const note = document.createElement('p'); note.className='product-detail-note'; note.textContent=product.category === 'Regalos' ? 'La disponibilidad de este producto se confirma al hacer el pedido.' : 'La presentación KAIROS está incluida en el precio visible. Revisa la etiqueta para confirmar la graduación alcohólica y los datos del fabricante.';
+    const add = document.createElement('button'); add.className='button button-dark full-width'; add.type='button'; add.disabled = !product.available; add.textContent = product.category === 'Regalos' ? 'Añadir regalo a la bolsa' : 'Añadir a mi bolsa'; add.addEventListener('click', () => { addToCart(id); closeProductDetail(); });
     info.append(eyebrow,title,price,desc,facts,note,add); layout.append(visual,info); holder.append(layout);
     $('#productDetailModal').classList.add('show'); $('#productDetailModal').setAttribute('aria-hidden','false'); document.body.classList.add('no-scroll');
   }
   function closeProductDetail() { $('#productDetailModal').classList.remove('show'); $('#productDetailModal').setAttribute('aria-hidden','true'); document.body.classList.remove('no-scroll'); }
-  function bottleCount() { return Object.values(state.giftItems).reduce((sum, qty) => sum + Math.max(0, Number(qty)||0), 0); }
-  function boxCount() { return Object.values(state.selectedBases).reduce((sum, qty) => sum + Math.max(0, Number(qty)||0), 0); }
-  function addProductToGift(id) {
-    const product = productById(id);
-    if (!product || !product.available) { toast('Este producto no está disponible por ahora.'); return; }
-    if (product.category === 'Regalos') { addToCart(id); return; }
-    state.giftItems[id] = (state.giftItems[id] || 0) + 1;
-    renderBuilder();
-    toast(`${product.name} se agregó a tu regalo.`);
-    $('#builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
   function addToCart(id, amount = 1) {
     const product = productById(id); if (!product || !product.available) { toast('Este producto no está disponible por ahora.'); return; }
     const existing = state.cart.find(item => item.type === 'product' && item.id === id);
     if (existing) existing.qty += amount; else state.cart.push({ type: 'product', id, qty: amount });
     persistCart(); renderCart(); toast('Añadido a tu bolsa.');
-  }
-  function addGiftToCart() {
-    const items = Object.entries(state.giftItems).filter(([_, qty]) => qty > 0);
-    if (!items.length) { toast('Elige al menos una botella.'); return; }
-    const bottles = bottleCount(), boxes = boxCount();
-    if (boxes !== bottles) { toast(`Seleccionaste ${bottles} botella(s): asigna exactamente ${bottles} caja(s). Llevas ${boxes}.`); $('#boxSelectionNote').textContent = `Te faltan ${bottles-boxes} caja(s) para tus ${bottles} botella(s). La regla es 1 botella = 1 caja.`; $('#boxSelectionNote').classList.add('box-selection-warning'); return; }
-    const products = items.map(([id, qty]) => ({ id, qty, name: productById(id)?.name || id }));
-    const bases = Object.entries(state.selectedBases).filter(([_,qty])=>qty>0).map(([id,qty])=>({id,qty,name:catalog.giftBases.find(b=>b.id===id)?.name||id,price:catalog.giftBases.find(b=>b.id===id)?.price||0}));
-    const gift = { type: 'gift', id: `gift-${Date.now()}`, qty: 1, baseId: bases[0]?.id, baseName: bases.map(b=>`${b.qty} × ${b.name}`).join(', '), basePrice: bases.reduce((sum,b)=>sum+b.qty*b.price,0), boxes:bases, products };
-    state.cart.push(gift); persistCart(); renderCart(); toast('Tu regalo se agregó a la bolsa.'); $('#cartDrawer').classList.add('open'); $('#cartOverlay').classList.add('show'); $('#cartDrawer').setAttribute('aria-hidden', 'false');
   }
   function getGiftPrice(item) { return (Number(item.basePrice) || 0) + item.products.reduce((sum, product) => sum + (Number(productById(product.id)?.price) || 0) * product.qty, 0); }
   function cartItemPrice(item) {
@@ -178,7 +211,9 @@
       let title = '', subtitle = '', price = 0;
       if (item.type === 'gift') { title = item.baseName || 'Regalo personalizado'; subtitle = `${item.products.length} referencia(s) · Regalo personalizado`; price = getGiftPrice(item); }
       else { const product = productById(item.id); if (!product) return; title = product.name; subtitle = `${product.category} · Cant. ${item.qty}`; price = cartItemPrice(item); row.append(productImage(product, true)); }
-      const detail = document.createElement('div'); detail.className = 'cart-item-detail'; const name = document.createElement('b'); name.textContent = title; const desc = document.createElement('small'); desc.textContent = subtitle; const value = document.createElement('strong'); value.textContent = money(price); detail.append(name, desc, value);
+      const detail = document.createElement('div'); detail.className = 'cart-item-detail'; const name = document.createElement('b'); name.textContent = title; const desc = document.createElement('small'); desc.textContent = subtitle; const value = document.createElement('strong'); value.textContent = money(price); detail.append(name, desc);
+      if (item.type === 'gift' || productById(item.id)?.category !== 'Regalos') { const includes = document.createElement('small'); includes.className = 'cart-item-includes'; includes.textContent = 'Incluye caja de madera, etiqueta para tu sueño y separador KAIROS.'; detail.append(includes); }
+      detail.append(value);
       const remove = document.createElement('button'); remove.className = 'remove-cart-item'; remove.textContent = 'Quitar'; remove.addEventListener('click', () => { state.cart = state.cart.filter(cartItem => cartItem !== item); persistCart(); renderCart(); }); row.append(detail, remove); holder.append(row);
     });
   }
@@ -192,41 +227,13 @@
         lines.push(`• ${item.baseName} — ${money(getGiftPrice(item))}`);
         item.products.forEach(product => lines.push(`   - ${product.qty} × ${productById(product.id)?.name || product.name}`));
       } else {
-        const product = productById(item.id); if (product) lines.push(`• ${item.qty} × ${product.name} — ${money(cartItemPrice(item))}`);
+        const product = productById(item.id); if (product) lines.push(`• ${item.qty} × ${product.name}${product.category === 'Regalos' ? '' : ' (incluye caja de madera, etiqueta para tu sueño y separador KAIROS)'} — ${money(cartItemPrice(item))}`);
       }
     });
     lines.push('', `Subtotal estimado: ${money(cartTotal())}`, '', '¿Me confirman disponibilidad, envío y medios de pago?');
     const number = String(catalog.whatsappNumber || '').replace(/\D/g, '');
     if (number.length < 10 || number === '573000000000') { toast('Configura el WhatsApp real en js/catalog.js antes de recibir pedidos.'); return; }
     window.open(`https://wa.me/${number}?text=${encodeURIComponent(lines.join('\n'))}`, '_blank', 'noopener,noreferrer');
-  }
-  function renderBuilder() {
-    const baseHolder = $('#baseOptions'); baseHolder.replaceChildren();
-    const bottles = bottleCount(); const boxes = boxCount();
-    $('#boxSelectionNote').textContent = bottles === 0 ? 'Primero elige tus botellas; luego asigna una caja por cada una.' : `Has elegido ${bottles} botella(s) y ${boxes} caja(s). ${boxes===bottles?'¡Perfecto! Cada botella tiene su caja.':boxes<bottles?`Te faltan ${bottles-boxes} caja(s).`:`Tienes ${boxes-bottles} caja(s) de más.`}`;
-    $('#boxSelectionNote').classList.toggle('box-selection-warning', bottles !== boxes && bottles > 0);
-    catalog.giftBases.forEach(base => {
-      const row = document.createElement('div'); row.className = `base-option box-quantity-option ${state.selectedBases[base.id] ? 'selected' : ''}`;
-      const art = document.createElement('span'); art.className = `base-art base-art-${base.tone || 'kraft'}`; art.innerHTML = '<i></i><b>K</b>';
-      const text = document.createElement('span'); text.className = 'base-option-text'; const name = document.createElement('b'); name.textContent = base.name; const desc = document.createElement('small'); desc.textContent = base.description; const price = document.createElement('small'); price.className='base-capacity'; price.textContent = `${money(base.price)} por caja`;
-      text.append(name,desc,price); const counter=document.createElement('div'); counter.className='quantity-control box-counter'; const minus=document.createElement('button'); minus.type='button'; minus.textContent='−'; minus.setAttribute('aria-label',`Quitar caja ${base.name}`); const qty=document.createElement('span'); qty.textContent=state.selectedBases[base.id]||0; const plus=document.createElement('button'); plus.type='button'; plus.textContent='+'; plus.setAttribute('aria-label',`Añadir caja ${base.name}`);
-      minus.addEventListener('click',()=>{state.selectedBases[base.id]=Math.max(0,(state.selectedBases[base.id]||0)-1);renderBuilder();}); plus.addEventListener('click',()=>{ state.selectedBases[base.id]=(state.selectedBases[base.id]||0)+1;renderBuilder(); }); counter.append(minus,qty,plus); row.append(art,text,counter); baseHolder.append(row);
-    });
-    const itemsHolder = $('#builderProductList'); itemsHolder.replaceChildren();
-    catalog.products.filter(product => product.available).forEach(product => {
-      const row = document.createElement('div'); row.className = 'builder-product'; row.append(productImage(product, true));
-      const info = document.createElement('div'); info.className = 'builder-product-info'; const name = document.createElement('b'); name.textContent = product.name; const meta = document.createElement('small'); meta.textContent = `${product.category}${product.style ? ` · ${product.style}` : ''}`; const price = document.createElement('strong'); price.textContent = money(product.price); info.append(name, meta, price);
-      const counter = document.createElement('div'); counter.className = 'quantity-control'; const minus = document.createElement('button'); minus.type = 'button'; minus.textContent = '−'; minus.setAttribute('aria-label', `Quitar ${product.name}`); const qty = document.createElement('span'); qty.textContent = state.giftItems[product.id] || 0; const plus = document.createElement('button'); plus.type = 'button'; plus.textContent = '+'; plus.setAttribute('aria-label', `Añadir ${product.name}`);
-      minus.addEventListener('click', () => { state.giftItems[product.id] = Math.max(0, (state.giftItems[product.id] || 0) - 1); renderBuilder(); }); plus.addEventListener('click', () => { state.giftItems[product.id] = (state.giftItems[product.id] || 0) + 1; renderBuilder(); }); counter.append(minus, qty, plus); row.append(info, counter); itemsHolder.append(row);
-    });
-    renderBuilderSummary();
-  }
-  function renderBuilderSummary() {
-    const holder = $('#builderSummary'); holder.replaceChildren(); let subtotal = 0;
-    Object.entries(state.selectedBases).filter(([_,qty])=>qty>0).forEach(([id,qty])=>{const box=catalog.giftBases.find(b=>b.id===id);if(!box)return;subtotal+=box.price*qty;const line=document.createElement('div');line.className='summary-line';const title=document.createElement('span');title.textContent=`${qty} × ${box.name}`;const price=document.createElement('b');price.textContent=money(box.price*qty);line.append(title,price);holder.append(line);});
-    Object.entries(state.giftItems).filter(([_, qty]) => qty > 0).forEach(([id, qty]) => { const product = productById(id); if (!product) return; subtotal += product.price * qty; const line = document.createElement('div'); line.className = 'summary-line'; const title = document.createElement('span'); title.textContent = `${qty} × ${product.name}`; const price = document.createElement('b'); price.textContent = money(product.price * qty); line.append(title, price); holder.append(line); });
-    if (!boxCount() && !Object.values(state.giftItems).some(q => q > 0)) { const empty = document.createElement('p'); empty.className = 'muted'; empty.textContent = 'Elige una presentación y agrega productos para comenzar.'; holder.append(empty); }
-    $('#builderTotal').textContent = money(subtotal);
   }
   function adminOpen() { $('#adminLoginModal').classList.add('show'); document.body.classList.add('no-scroll'); $('#adminEmail').value=''; $('#adminLoginError').textContent=''; setTimeout(() => $('#adminEmail').focus(), 50); }
   function adminLoginClose() { $('#adminLoginModal').classList.remove('show'); document.body.classList.remove('no-scroll'); }
@@ -259,7 +266,57 @@
     reader.onload = () => { try { const imported = JSON.parse(reader.result); if (!Array.isArray(imported.products) || !Array.isArray(imported.categories)) throw new Error('El archivo debe incluir products y categories.'); catalog = { ...clone(seed), ...imported }; saveCatalog(); state.category = 'Todos'; renderAll(); renderAdmin(); setAdminStatus('Catálogo importado correctamente.'); toast('Catálogo importado.'); } catch (error) { alert(`No se pudo importar el archivo JSON. ${error.message || ''}`); } $('#importCatalog').value = ''; };
     reader.readAsText(file);
   }
-  function renderAll() { renderCategories(); renderProducts(); renderCart(); renderBuilder(); }
+  function initPresentationStory() {
+    const story = $('#presentationStory');
+    if (!story) return;
+    const slides = [
+      { image: 'images/presentation/kairos-collection.jpg', alt: 'Colección KAIROS: botellas con caja de madera y separador', caption: 'Un detalle con intención' },
+      { image: 'images/presentation/wooden-box.jpg', alt: 'Caja de madera KAIROS con una botella', caption: 'Caja de madera KAIROS' },
+      { image: 'images/presentation/dream-label.jpg', alt: 'Etiqueta Mi sueño y separador KAIROS junto a una botella', caption: 'Una botella que acompaña tu sueño' }
+    ];
+    let current = 0;
+    let timer = null;
+    let pointerStartedAt = 0;
+    const progress = [...$('#storyProgress').children];
+    function scheduleNext() {
+      clearTimeout(timer);
+      story.classList.remove('is-holding');
+      progress.forEach(bar => bar.classList.remove('is-active'));
+      void story.offsetWidth;
+      progress[current].classList.add('is-active');
+      timer = setTimeout(() => showSlide(current + 1), 6000);
+    }
+    function showSlide(index) {
+      current = (index + slides.length) % slides.length;
+      const slide = slides[current];
+      $('#presentationStoryImage').src = slide.image;
+      $('#presentationStoryImage').alt = slide.alt;
+      $('#presentationStoryCaption').textContent = slide.caption;
+      progress.forEach((bar, i) => { bar.classList.toggle('is-active', i === current); bar.classList.remove('is-paused'); });
+      scheduleNext();
+    }
+    story.addEventListener('pointerdown', event => {
+      if (event.target.closest('.story-arrow')) return;
+      pointerStartedAt = Date.now(); clearTimeout(timer); story.classList.add('is-holding');
+      if (story.setPointerCapture) story.setPointerCapture(event.pointerId);
+    });
+    story.addEventListener('pointerup', event => {
+      if (event.target.closest('.story-arrow')) return;
+      const held = Date.now() - pointerStartedAt;
+      if (held < 350) showSlide(current + 1);
+      else scheduleNext();
+    });
+    story.addEventListener('pointercancel', scheduleNext);
+    story.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); showSlide(current + 1); }
+      if (event.key === 'ArrowLeft') showSlide(current - 1);
+      if (event.key === 'ArrowRight') showSlide(current + 1);
+    });
+    $('#storyNext').addEventListener('click', event => { event.stopPropagation(); showSlide(current + 1); });
+    $('#storyPrevious').addEventListener('click', event => { event.stopPropagation(); showSlide(current - 1); });
+    scheduleNext();
+  }
+  function renderAll() { renderCategories(); renderProducts(); renderCart(); }
 
   // Búsqueda y filtros
   $('#catalogSearch').addEventListener('input', event => { state.query = event.target.value; renderProducts(); });
@@ -271,13 +328,11 @@
   $('#menuToggle').addEventListener('click', () => { state.mobileNav = !state.mobileNav; $('#mobileNav').classList.toggle('open', state.mobileNav); });
   $$('#mobileNav a').forEach(link => link.addEventListener('click', () => { $('#mobileNav').classList.remove('open'); state.mobileNav = false; }));
 
-  // Bolsa y builder
+  // Bolsa
   $('#cartOpen').addEventListener('click', openCart); $('#cartClose').addEventListener('click', closeCart); $('#cartOverlay').addEventListener('click', closeCart); $('#continueShopping').addEventListener('click', closeCart); $('#checkoutButton').addEventListener('click', checkout);
   $('#clearCart').addEventListener('click', () => { state.cart = []; persistCart(); renderCart(); toast('Tu bolsa está vacía.'); });
-  $('#addGiftToCart').addEventListener('click', addGiftToCart);
   $('#productDetailClose').addEventListener('click', closeProductDetail);
   $('#productDetailModal').addEventListener('click', e => { if(e.target.id==='productDetailModal') closeProductDetail(); });
-  $('#resetBuilder').addEventListener('click', () => { state.selectedBase = null; state.selectedBases = {}; state.giftItems = {}; renderBuilder(); toast('El regalo se reinició.'); });
 
   // Edad: se recuerda en este navegador. El aviso no reemplaza verificación de edad ni obligaciones legales.
   try { if (sessionStorage.getItem('kairos_age_confirmed') === 'yes') $('#ageModal').classList.remove('show'); else $('#ageModal').classList.add('show'); } catch (_) { $('#ageModal').classList.add('show'); }
@@ -312,5 +367,5 @@
   $('#newsletterForm').addEventListener('submit', event => { event.preventDefault(); const email = $('#newsletterEmail').value.trim(); $('#newsletterMessage').textContent = `¡Gracias! Para habilitar suscripciones reales, conecta un servicio de email marketing. (${email})`; $('#newsletterMessage').classList.add('success-message'); });
   $('#yearNow').textContent = new Date().getFullYear();
   document.addEventListener('keydown', event => { if (event.key === 'Escape') { closeCart(); adminClose(); adminLoginClose(); $('#productModal').classList.remove('show'); document.body.classList.remove('no-scroll'); } });
-  renderAll(); setupWhatsappLink();
+  renderAll(); setupWhatsappLink(); initPresentationStory();
 })();
