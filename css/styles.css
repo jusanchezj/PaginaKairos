@@ -171,6 +171,9 @@
 .sparkle svg{display:block;width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round}
 .newsletter-form button{display:grid;place-items:center}
 .newsletter-form button .arrow-icon{width:18px;height:18px}
+.age-card img.age-logo{display:block;width:126px;height:95px;object-fit:contain;margin:0 auto 8px;border:0;border-radius:0}
+.hero-note{color:#405247}
+@media(max-width:800px){.hero-note,.hero-note strong,.hero-note .sparkle{color:#fff}}
 
 /* Tarjetas de catálogo compactas */
 .product-grid{align-items:start}

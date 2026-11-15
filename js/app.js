@@ -343,7 +343,7 @@
   // Edad: se recuerda en este navegador. El aviso no reemplaza verificación de edad ni obligaciones legales.
   try { if (sessionStorage.getItem('kairos_age_confirmed') === 'yes') $('#ageModal').classList.remove('show'); else $('#ageModal').classList.add('show'); } catch (_) { $('#ageModal').classList.add('show'); }
   $('#ageConfirm').addEventListener('click', () => { try { sessionStorage.setItem('kairos_age_confirmed', 'yes'); } catch (_) {} $('#ageModal').classList.remove('show'); });
-  $('#ageDeny').addEventListener('click', () => { $('#ageModal .age-card').innerHTML = '<div class="age-logo">K<span>✳</span></div><h2>Gracias por visitarnos.</h2><p>Debes tener 18 años o más para ingresar a esta tienda.</p>'; });
+  $('#ageDeny').addEventListener('click', () => { $('#ageModal .age-card').innerHTML = '<img class="age-logo" src="images/kairos-logo.jpeg" alt="KAIROS — Un brindis para soñar"><h2>Gracias por visitarnos.</h2><p>Debes tener 18 años o más para ingresar a esta tienda.</p>'; });
 
   // Administración local del catálogo
   $('#adminOpen').addEventListener('click', event => { event.preventDefault(); adminOpen(); }); $('#adminLoginClose').addEventListener('click', adminLoginClose); $('#adminLoginModal').addEventListener('click', event => { if (event.target === $('#adminLoginModal')) adminLoginClose(); }); $('#adminLoginForm').addEventListener('submit', event => { event.preventDefault(); const email = $('#adminEmail').value.trim().toLowerCase(); if (email === 'kairos@gmail.com') { showAdminPanel(); } else { $('#adminLoginError').textContent = 'Este correo no está autorizado.'; } }); $('#adminClose').addEventListener('click', adminClose);
