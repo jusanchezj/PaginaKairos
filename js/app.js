@@ -91,6 +91,12 @@
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path'); path.setAttribute('d', paths[name] || paths.bottle); svg.append(path);
     return svg;
   }
+  function arrowIconNode() {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('aria-hidden', 'true'); svg.classList.add('arrow-icon');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path'); path.setAttribute('d', 'M7 17 17 7M7 7h10v10'); svg.append(path);
+    return svg;
+  }
   function productImage(product, compact = false) {
     const wrapper = document.createElement('div'); wrapper.className = compact ? 'mini-product-image' : 'product-image';
     if (product.image) { const img = document.createElement('img'); img.src = product.image; img.alt = product.name; img.loading = 'lazy'; setImageFallback(img, product.category); wrapper.append(img); }
@@ -110,7 +116,7 @@
       const card = document.createElement('button'); card.className = `category-card category-card-${(index % 4) + 1}`; card.type = 'button';
       const top = document.createElement('div'); top.className = 'category-card-top';
       const icon = document.createElement('span'); icon.className = 'category-symbol'; icon.append(categoryIconNode(category.icon));
-      const arrow = document.createElement('span'); arrow.className = 'category-arrow'; arrow.textContent = '↗';
+      const arrow = document.createElement('span'); arrow.className = 'category-arrow'; arrow.append(arrowIconNode());
       top.append(icon, arrow);
       const title = document.createElement('h3'); title.textContent = category.name;
       const note = document.createElement('p'); note.textContent = `${count} ${count === 1 ? 'opción' : 'opciones'} para elegir`;

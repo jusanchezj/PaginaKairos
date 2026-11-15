@@ -162,6 +162,16 @@
 @media(max-width:480px){.hero h1{font-size:clamp(37px,9.4vw,48px)}.presentation-story{min-height:340px;aspect-ratio:4/5}.presentation-story>img{min-height:340px}.story-caption{display:block;padding:55px 15px 15px}.story-caption>span{display:block;font-size:20px}.story-caption small{display:block;text-align:left;margin-top:6px;font-size:7px}.story-arrow{width:34px;height:34px;font-size:23px}.story-previous{left:9px}.story-next{right:9px}}
 @media(prefers-reduced-motion:reduce){.story-progress span.is-active:after{animation:none;width:100%}.presentation-story>img{transition:none}}
 
+/* Íconos vectoriales para evitar que el sistema los convierta en emojis */
+.arrow-icon{display:block;width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.cta-arrow{display:inline-flex;align-items:center;justify-content:center}
+.category-arrow{display:grid;place-items:center}
+.category-arrow .arrow-icon{width:19px;height:19px;stroke-width:1.7}
+.sparkle{display:grid;place-items:center;flex:none;width:28px;height:28px}
+.sparkle svg{display:block;width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round}
+.newsletter-form button{display:grid;place-items:center}
+.newsletter-form button .arrow-icon{width:18px;height:18px}
+
 /* Tarjetas de catálogo compactas */
 .product-grid{align-items:start}
 .product-card{align-self:start}
